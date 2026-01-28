@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2023년 2학기 시간표</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --line-color: #e0e0e0;
+            --text-color: #333;
+            /* 파스텔 톤 색상 팔레트 */
+            --color-1: #ffcfcf; /* 핑크 */
+            --color-2: #fff5b1; /* 옐로우 */
+            --color-3: #d4f0f0; /* 민트 */
+            --color-4: #e2dbf5; /* 퍼플 */
+            --color-5: #ffdfba; /* 오렌지 */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+        }
+
+        .timetable-container {
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid var(--line-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* 헤더 (제목) */
+        .header-title {
+            padding: 15px 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--line-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 그리드 레이아웃 */
+        .grid {
+            display: grid;
+            grid-template-columns: 50px repeat(5, 1fr); /* 시간축 + 5일 */
+            grid-template-rows: 40px repeat(9, 1fr); /* 요일헤더 + 9시간(9시~17시) */
+            border-collapse: collapse;
+            min-height: 600px; /* 시간표 전체 높이 */
+        }
+
+        /* 공통 셀 스타일 */
+        .cell {
+            border-right: 1px solid var(--line-color);
+            border-bottom: 1px solid var(--line-color);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* 요일 헤더 */
+        .day-header {
+            font-weight: bold;
+            background-color: #f9f9f9;
+            color: #666;
+        }
+
+        /* 시간 축 */
+        .time-axis {
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 5px;
+            font-size: 0.75rem;
+            color: #888;
+            background-color: #fff;
+            border-right: 1px solid var(--line-color);
+        }
+        
+        .time-label {
+            height: 100%; /* 각 시간 셀의 높이 */
+        }
+
+        /* 수업 블록 스타일 */
+        .class-block {
+            padding: 8px;
+            margin: 2px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .class-title {
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        .class-info {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        /* 그리드 위치 지정 (Row: 1=Header, 2=9시, 3=10시 ...) */
+        /* 9시: row 2
+           10시: row 3
+           11시: row 4
+           12시: row 5
+           13시: row 6
+           14시: row 7
+           15시: row 8
+           16시: row 9
+           17시: row 10
+        */
+
+        /* 월요일: 자바스크립트서버플랫폼 (10:00~12:50) -> col 2 / row 3~6 */
+        .mon-am {
+            grid-column: 2;
+            grid-row: 3 / 6;
+            background-color: var(--color-1);
+        }
+
+        /* 화요일: DX 이미징 (10:00~12:50) -> col 3 / row 3~6 */
+        .tue-am {
+            grid-column: 3;
+            grid-row: 3 / 6;
+            background-color: var(--color-2);
+        }
+
+        /* 화요일: 전자계산기구조 (14:00~16:50) -> col 3 / row 7~10 */
+        .tue-pm {
+            grid-column: 3;
+            grid-row: 7 / 10;
+            background-color: var(--color-3);
+        }
+
+        /* 목요일: 객체지향언어 (10:00~12:50) -> col 5 / row 3~6 */
+        .thu-am {
+            grid-column: 5;
+            grid-row: 3 / 6;
+            background-color: var(--color-4);
+        }
+
+        /* 목요일: 자료구조 (14:00~16:50) -> col 5 / row 7~10 */
+        .thu-pm {
+            grid-column: 5;
+            grid-row: 7 / 10;
+            background-color: var(--color-5);
+        }
+
+        /* 빈 셀들 (배경 그리드 유지를 위해) */
+        .empty-grid {
+            grid-column: 1 / -1;
+            grid-row: 1 / -1;
+            display: grid;
+            grid-template-columns: 50px repeat(5, 1fr);
+            grid-template-rows: 40px repeat(9, 1fr);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .empty-cell {
+            border-right: 1px solid var(--line-color);
+            border-bottom: 1px solid var(--line-color);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="timetable-container">
+    <div class="header-title">
+        <span style="color:#d9534f">2023년 2학기</span>&nbsp;시간표
+        <span style="font-size: 1.2rem;">⚙️ +</span>
+    </div>
+
+    <div class="grid">
+        <div class="empty-grid">
+            <div class="empty-cell" style="background:#fff;"></div>
+            <div class="empty-cell"></div><div class="empty-cell"></div><div class="empty-cell"></div><div class="empty-cell"></div><div class="empty-cell"></div>
+            <script>
+                for(let i=0; i<45; i++) { document.write('<div class="empty-cell"></div>'); }
+            </script>
+        </div>
+
+        <div class="cell day-header" style="z-index:1;"></div> <div class="cell day-header" style="z-index:1;">월</div>
+        <div class="cell day-header" style="z-index:1;">화</div>
+        <div class="cell day-header" style="z-index:1;">수</div>
+        <div class="cell day-header" style="z-index:1;">목</div>
+        <div class="cell day-header" style="z-index:1;">금</div>
+
+        <div class="cell time-axis" style="grid-row: 2; z-index:1;">9</div>
+        <div class="cell time-axis" style="grid-row: 3; z-index:1;">10</div>
+        <div class="cell time-axis" style="grid-row: 4; z-index:1;">11</div>
+        <div class="cell time-axis" style="grid-row: 5; z-index:1;">12</div>
+        <div class="cell time-axis" style="grid-row: 6; z-index:1;">1</div>
+        <div class="cell time-axis" style="grid-row: 7; z-index:1;">2</div>
+        <div class="cell time-axis" style="grid-row: 8; z-index:1;">3</div>
+        <div class="cell time-axis" style="grid-row: 9; z-index:1;">4</div>
+        <div class="cell time-axis" style="grid-row: 10; z-index:1;">5</div>
+
+        <div class="class-block mon-am">
+            <div class="class-title">자바스크립트서버플랫폼</div>
+            <div class="class-info">10:00 - 12:50</div>
+            <div class="class-info">정보경영강의실</div>
+            <div class="class-info" style="font-weight:500;">김영일 교수님</div>
+        </div>
+
+        <div class="class-block tue-am">
+            <div class="class-title">DX 이미징</div>
+            <div class="class-info">10:00 - 12:50</div>
+            <div class="class-info">스마트IoT</div>
+            <div class="class-info" style="font-weight:500;">성수경 교수님</div>
+        </div>
+
+        <div class="class-block tue-pm">
+            <div class="class-title">전자계산기구조</div>
+            <div class="class-info">14:00 - 16:50</div>
+            <div class="class-info">PC 41실</div>
+            <div class="class-info" style="font-weight:500;">박종범 교수님</div>
+        </div>
+
+        <div class="class-block thu-am">
+            <div class="class-title">객체지향언어</div>
+            <div class="class-info">10:00 - 12:50</div>
+            <div class="class-info">스마트 AI</div>
+            <div class="class-info" style="font-weight:500;">고정림 교수님</div>
+        </div>
+
+        <div class="class-block thu-pm">
+            <div class="class-title">자료구조</div>
+            <div class="class-info">14:00 - 16:50</div>
+            <div class="class-info">스마트IoT</div>
+            <div class="class-info" style="font-weight:500;">장재경 교수님</div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
